@@ -1,0 +1,27 @@
+---
+title: "Confidence Interval"
+author: "Zimu Chen"
+runtime: shiny
+output: html_document
+---
+
+均匀分布生成正态分布
+
+```{r echo=FALSE}
+library(shiny)
+  sidebarLayout(
+    sidebarPanel(
+      sliderInput("n","number of observations:",min=50, max=1000,value=200, step=50)
+  ), 
+    mainPanel(tabPanel("Plot", plotOutput("plot")) 
+      )
+    )
+  
+  output$plot <- renderPlot({
+     unifdata <- runif(input$n, 0, 1)
+     normdata <- qnorm(unifdata)
+     par(mfrow=c(1,2))
+     hist(unifdata, main=paste('runif(', input$n, ')', sep=''))
+     hist(normdata, main=paste('rnorm(', input$n, ')', sep=''))
+  })
+```

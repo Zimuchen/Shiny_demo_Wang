@@ -1,0 +1,69 @@
+---
+title: "Confidence Interval"
+author: "Zimu Chen"
+runtime: shiny
+output: html_document
+---
+
+置信区间
+
+```{r echo=FALSE}
+library(shiny)
+  sidebarLayout(
+    sidebarPanel(
+      sliderInput("n","number of observations:",min=10, max=500,value=100, step=30),
+      br(),
+      sliderInput("q", "Cover Probability (%):", min=50, max=100,value=95, step=1)
+  ), 
+      
+    mainPanel(tabPanel("Plot", plotOutput("plot")) 
+      )
+    )
+
+ dataInput <- reactive({
+    rnorm(input$n, 0, 1)
+  })
+  
+  output$plot <- renderPlot({
+    samples <- dataInput()
+    n <- length(samples)
+    xmean <- mean(samples)
+    # xstd <- sd(samples)
+    # qua <- qt(1-(1-input$q/100)/2, df=input$n-1)
+    
+    qua <- qnorm(1 - (1 - input$q / 100) / 2, 0, 1)
+    minx = qnorm(.0001, xmean, sqrt(1 / n))
+    maxx = qnorm(.9999, xmean, sqrt(1 / n))
+    x = seq(from = minx, to = maxx, length = 1000)
+    hx = x
+    
+    for (k in 1:1000) {
+      hx[k] = do.call("dnorm", c(x[k], list(xmean, sqrt(1 / n))))
+    }
+    
+    miny = 0
+    miny = 0
+    if (is.infinite(max(hx)) || max(hx) > 1)
+    {
+      maxy = 20
+    } else{
+      maxy = round(max(hx), digits = 2)
+    }
+    
+    plot(x, hx, type = "n", xlab = "X", ylab = "Density", main = "Probability Density", axes = FALSE, xlim = c(-1, 1) ) #,ylim=c(miny,maxy)
+    lines(x, hx)
+    # axis(1,pos=0,col.axis="grey",col.ticks="grey",col="grey")
+    axis(1)  #,pos=0
+    axis(2, at = round(seq(from = miny, to = maxy, length = 5 ), digits = 3), pos = -1)
+    
+    xlow <- xmean - qua * sqrt(1 / n)
+    xhigh <- xmean + qua * sqrt(1 / n)
+    i = (x >= xlow & x <= xhigh)
+    polygon(c(xlow, x[i], xhigh), c(0, hx[i], 0), col = "deepskyblue2")
+    # area = do.call(paste("p",input$dist,sep=""),c(pval,list(0,1)))
+    # result = paste("P(X<",signif(pval,digits=4),")=",signif(area,digits=3))
+    # mtext(result,3)
+    axis(1, at = xlow, pos = 0, col.ticks = "red", col.axis = "red", lwd.ticks = 1, cex.axis = 0.8)
+    axis(1, at = xhigh, pos = 0, col.ticks = "red", col.axis = "red", lwd.ticks = 1, cex.axis = 0.8 )
+  })
+```

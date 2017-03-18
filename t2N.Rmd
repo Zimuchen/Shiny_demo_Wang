@@ -1,0 +1,64 @@
+---
+title: "Confidence Interval"
+author: "Zimu Chen"
+runtime: shiny
+output: html_document
+---
+
+t 分布逼近正态分布
+
+```{r echo=FALSE}
+library(shiny)
+  sidebarLayout(
+    sidebarPanel(
+      sliderInput("t.df","DF", min=1, max=20,value=5, step=1) ),
+    mainPanel(tabPanel("Plot", plotOutput("plot")))
+  )
+  output$plot <- renderPlot({
+     minx = do.call(paste("q","norm",sep=""),c(.0001,list(0,1)))
+      maxx = do.call(paste("q","norm",sep=""),c(.9999,list(0,1)))
+      x = seq(from=minx,to=maxx,length=1000)
+      hx = x
+      
+      for(k in 1:1000){  
+        hx[k] = do.call(paste("d","norm",sep=""),c(x[k],list(0,1)))
+      }
+      
+      miny = 0
+      miny = 0
+      if (is.infinite(max(hx)) || max(hx)>1)
+      {
+        maxy = 1
+      }else{
+        maxy = round(max(hx),digits=2)      
+      }
+      
+      plot(x,hx,type="n",xlab="X",ylab="Density",
+           main="Probability Density",axes=FALSE,ylim=c(miny,maxy))
+      lines(x,hx)
+      axis(1,pos=0)
+      axis(2,at=round(seq(from=miny,to=maxy,length=5),digits=3),pos=minx)
+      # pval = do.call(paste("q",input$dist,sep=""),c(input$p,list(0,1)))
+
+
+      mintx = do.call(paste("q","t",sep=""),c(.0001,list(input$t.df)))
+      maxtx = do.call(paste("q","t",sep=""),c(.9999,list(input$t.df)))
+      tx = seq(from=mintx,to=maxtx,length=1000)
+      thx = tx
+      
+      for(k in 1:1000){  
+        thx[k] = do.call(paste("d","t",sep=""),c(tx[k],list(input$t.df)))
+      }
+      
+      tminy = 0
+      tminy = 0
+      if (is.infinite(max(thx)) || max(thx)>1)
+      {
+        tmaxy = 1
+      }else{
+        tmaxy = round(max(hx),digits=2)      
+      }
+      
+      lines(tx,thx,col="blue")
+  })
+```
